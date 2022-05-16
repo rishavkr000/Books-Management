@@ -11,8 +11,7 @@ const reviewSchema = new mongoose.Schema({
         type: String,
         trim:true,
         required: "reviewed by is required",
-        default: "Guest",
-        value: "Number",
+        default: "Guest"
     },
     reviewedAt: {
         type: Date,

@@ -152,8 +152,11 @@ const getBook = async function (req, res) {
                 subcategory
             } = queryData;
 
-            if (!isValidObjectId(userId)) return res.status(400).send({ status: false, message: "Invalid userId" })
             if (!isEmpty(userId)) {
+                if (!isValidObjectId(userId)) return res.status(400).send({
+                    status: false,
+                    message: "Invalid userId"
+                })
                 obj.userId = userId
             }
             if (!isEmpty(category)) {
@@ -380,7 +383,13 @@ const delBookById = async (req, res) => {
 
         // Deletion of reviews if book is deleted
         if (deletion) {
-            await reviewsModel.updateMany({ bookId }, { $set: { isDeleted: true } })
+            await reviewsModel.updateMany({
+                bookId
+            }, {
+                $set: {
+                    isDeleted: true
+                }
+            })
         }
         res.status(200).send({
             status: true,

@@ -1,6 +1,6 @@
 const BooksModel = require("../modules/BooksModel");
 const reviewsModel = require("../modules/ReviewModel");
-
+const aws = require("aws-sdk")
 const moment = require('moment')
 
 //destructure of validation.js
@@ -13,9 +13,50 @@ const {
     isValidISBN
 } = require("../utility/validation")
 
+// Upload AWS file
+
+aws.config.update({
+    accessKeyId: "AKIAY3L35MCRUJ6WPO6J",
+    secretAccessKey: "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",
+    region: "ap-south-1"
+})
+
+let uploadFile = async ( file) => {
+   return new Promise( function(resolve, reject) {
+    let s3= new aws.S3({apiVersion: '2006-03-01'}); 
+
+    var uploadParams= {
+        ACL: "public-read",
+        Bucket: "classroom-training-bucket",  
+        Key: "rishav/" + file.originalname, 
+        Body: file.buffer
+    }
+
+    s3.upload( uploadParams, function (err, data ){
+        if(err) {
+            return reject({"error": err})
+        }
+        console.log(data)
+        console.log("file uploaded succesfully")
+        return resolve(data.Location)
+    })
+
+   })
+}
+
+
+
+
 //====================================================[API TO CREATE BOOK]==========================================================
 const createBook = async (req, res) => {
     try {
+
+        let uploadedFileURL
+        let files= req.files
+        if(files && files.length>0)
+          uploadedFileURL = await uploadFile( files[0] )
+        else return res.status(400).send({ msg: "No file found" })
+
         const data = req.body;
 
         if (!isValidRequestBody(data)) return res.status(400).send({
@@ -25,6 +66,7 @@ const createBook = async (req, res) => {
 
         let {
             title,
+            bookCover,
             ISBN,
             releasedAt,
             category,
@@ -54,6 +96,7 @@ const createBook = async (req, res) => {
             message: "Excerpt is required"
         })
 
+        
 
         if (isEmpty(category)) return res.status(400).send({
             status: false,
@@ -107,10 +150,13 @@ const createBook = async (req, res) => {
             status: false,
             message: "ISBN already exist"
         })
+        
+        data.bookCover = uploadedFileURL
 
         //Book creation
         const createBook = await BooksModel.create({
             title,
+            bookCover,
             excerpt,
             userId,
             ISBN,
@@ -128,7 +174,7 @@ const createBook = async (req, res) => {
     } catch (error) {
         return res.status(500).send({
             status: false,
-            message: error.message
+            message: error
         })
     }
 }

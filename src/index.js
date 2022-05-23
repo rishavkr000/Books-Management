@@ -4,11 +4,15 @@ const bodyParser = require("body-parser");
 const route = require("./routes/route.js");
 const app = express();
 const port = 3000;
+const multer= require("multer");
+// const { AppConfig } = require('aws-sdk');
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({
   extended: true
 }));
+
+app.use( multer().any())
 
 mongoose
   .connect(

@@ -110,14 +110,9 @@ const bookAuthorization = async (req, res, next) => {
     }
 }
 
-
-
-
-
-
-
 module.exports = {
     authenticate,
     userAuthrization,
     bookAuthorization
 }
+
